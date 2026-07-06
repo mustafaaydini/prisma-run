@@ -52,17 +52,40 @@ Mağazadaki **SHARDS sekmesi** hazır: 3 paket ($1.99 / $4.99 / $9.99). Kodda `P
 
 ---
 
-## 📱 Google Play'de yayınlama (Android)
+## 📱 Google Play'de yayınlama (Android) — senin için hazırlanan adımlar
 
-Oyun artık gerçek bir PWA (Progressive Web App): `manifest.webmanifest`, `sw.js` (offline çalışma) ve 3 ikon dosyası (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`) hazır — bunlar bir Android uygulamasının **teknik ön koşulu**. Bu makinede Java/Android SDK kurulu olmadığından ve Play Store yayını senin kendi Google hesabınla yapılması gerektiğinden (bunları senin adına oluşturamam), kalan adımlar şöyle — hiçbiri Android Studio gerektirmiyor:
+Şu an elimizdeki durum: **GitHub hesabın var, Play Console hesabın yok.** Bu makinede Java/Android SDK kurulu değil ve ne GitHub'a push ne de Play Console'a giriş benim yapabileceğim işlemler değil (kendi hesap bilgilerin gerekiyor) — ama gerisi tamamen hazır:
 
-1. **Oyunu herkese açık bir HTTPS adresinde barındır** (TWA/PWA paketleyicileri için şart). En hızlısı:
-   - **GitHub Pages** — bu klasörü bir GitHub reposuna yükle, Settings → Pages'ten yayınla (ücretsiz).
-   - veya **Netlify/Vercel** — `game1` klasörünü sürükle-bırak ile deploy et (hesap açman yeterli, dakikalar sürer).
-2. **PWABuilder.com'a git**, yayındaki URL'ni gir. Site otomatik olarak manifest/service worker'ı okur ve **imzalanmış Android App Bundle (.aab)** üretir — hiçbir kurulum gerekmez, tamamen tarayıcıda.
-3. **Google Play Console** hesabı aç (tek seferlik 25$), yeni uygulama oluştur, PWABuilder'ın verdiği `.aab` dosyasını yükle, mağaza bilgilerini (açıklama, ekran görüntüleri, ikon — `icon-512.png` hazır) doldur ve incelemeye gönder.
+✅ **Hazır olanlar** (bu repo'da): `index.html`, `manifest.webmanifest`, `sw.js` (çevrimdışı çalışma), 3 ikon (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`), `privacy.html` (gizlilik politikası — Play Store zorunlu kılıyor), `STORE_LISTING.md` (kopyala-yapıştır mağaza metinleri: başlık, açıklama, kategori), `store-assets/` klasöründe 4 adet gerçek oyun içi ekran görüntüsü. Yerel bir git deposu da oluşturuldu ve ilk commit atıldı.
 
-Alternatif (daha teknik, tam kontrol istersen): `npx @bubblewrap/cli init --manifest=https://senin-adresin/manifest.webmanifest` komutu bir Android Studio Gradle projesi oluşturur; ilk çalıştırmada JDK+Android SDK indirmeni ister (birkaç GB).
+### Senin yapman gerekenler (~15 dakika, hiç kod/terminal gerekmiyor):
+
+**1. GitHub'a yükle (Pages ile ücretsiz barındırma)**
+   - [github.com/new](https://github.com/new) adresine git, repo adı `prisma-run`, **Public**, README ekleme, "Create repository".
+   - Açılan sayfada **"uploading an existing file"** linkine tıkla, `C:\Users\musta\Desktop\game1` klasöründeki **tüm dosyaları** (`.git` ve `.claude` klasörleri hariç) sürükle-bırak, "Commit changes".
+   - Repo sayfasında **Settings → Pages** → Source: `Deploy from a branch` → Branch: `main` / `(root)` → **Save**.
+   - ~1 dakika sonra oyunun adresi şu şekilde olacak: `https://<kullanıcı-adın>.github.io/prisma-run/`
+
+**2. PWABuilder ile Android paketi üret (kurulum yok, tarayıcıda)**
+   - [pwabuilder.com](https://www.pwabuilder.com) adresine git, 1. adımdaki linki yapıştır.
+   - Site manifest/ikonları otomatik okuyacak (yeşil onay bekleniyor). **"Package for stores" → Android** sekmesine geç.
+   - **"Signing key"** kısmında **"Generate new signing key"** seç (bu anahtarı indirip güvenli bir yere kaydet — gelecekte güncelleme yayınlamak için lazım olacak).
+   - **İndir** — sana imzalı bir `.aab` dosyası ve `assetlinks.json` verecek. `assetlinks.json`'ı `/.well-known/assetlinks.json` yoluna GitHub reposuna ekle (adres çubuğunda tarayıcı arayüzü olmadan tam ekran açılması için gerekli, opsiyonel ama önerilir).
+
+**3. Google Play Console hesabı aç**
+   - [play.google.com/console](https://play.google.com/console) → Google hesabınla giriş → kayıt formunu doldur → **25$ tek seferlik ücret** (kredi kartıyla).
+   - Onay genelde birkaç saat - birkaç gün sürebilir.
+
+**4. Uygulamayı oluştur ve yükle**
+   - Play Console'da **"Create app"** → isim: *Prisma Run* → dil, ücretsiz/ücretli seç.
+   - **Store listing**: `STORE_LISTING.md` içindeki metinleri kopyala-yapıştır yap; `store-assets/` klasöründeki 4 ekran görüntüsünü ve `icon-512.png`'yi yükle.
+   - **Privacy policy URL**: 1. adımda yayınladığın adresin sonuna `/privacy.html` ekle (örn. `https://kullanici-adin.github.io/prisma-run/privacy.html`).
+   - **App content** sekmesinde içerik derecelendirme anketini doldur (`STORE_LISTING.md`'de yol gösterici notlar var — şiddet/kullanıcı içeriği yok, "Everyone" bekleniyor).
+   - **Production** (veya önce **Internal testing** ile dene) → 2. adımdaki `.aab` dosyasını yükle → **"Review release"** → **"Start rollout"**.
+
+İnceleme genelde birkaç saatten birkaç güne kadar sürer. Onaylanınca oyun Play Store'da yayında olacak.
+
+**Bu adımların herhangi birinde takılırsan (ekran görüntüsü, hata mesajı vb.) bana gönder, birlikte çözeriz.**
 
 ---
 
