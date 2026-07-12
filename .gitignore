@@ -1,1 +1,8 @@
 .claude/
+
+# Android signing - NEVER commit (public repo)
+android-package/
+*.keystore
+*.aab
+*.apk
+signing*.txt

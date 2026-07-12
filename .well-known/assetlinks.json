@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.mustafaaydini.prismarun",
+        "sha256_cert_fingerprints": ["88:32:9F:D8:5A:AF:94:43:AF:4A:6E:9E:7A:7E:51:D0:83:60:01:DA:38:FD:64:83:66:88:D8:79:65:1D:A5:18"]
+      }
+    }]
