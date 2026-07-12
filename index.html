@@ -7,6 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
 <meta name="theme-color" content="#14102b">
 <link rel="manifest" href="manifest.webmanifest">
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <link rel="apple-touch-icon" href="icon-512.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -87,16 +88,36 @@ const GEM_PACKS = [
   { id:'large',  gems:14000, label:'$9.99' },
 ];
 
-// ---- MONETIZATION: rewarded ads. Demo implementation plays a fake 3s "ad".
-// To earn real money, publish on a portal and replace show() with its SDK:
-//   CrazyGames: window.CrazyGames.SDK.ad.requestAd('rewarded', {adFinished: onReward})
-//   Poki:       PokiSDK.rewardedBreak().then(ok => ok && onReward())
-//   GameMonetize / AdSense H5 work the same way.
+// ---- MONETIZATION: rewarded ads via CrazyGames SDK when available;
+// falls back to the 3s demo "ad" elsewhere (GitHub Pages, TWA, itch.io...).
+let cgReady = false;
+(async () => {
+  try {
+    if (window.CrazyGames && window.CrazyGames.SDK) {
+      await window.CrazyGames.SDK.init();
+      // only go live on the real portal; localhost/Pages/TWA keep the demo ad
+      cgReady = window.CrazyGames.SDK.environment === 'crazygames';
+    }
+  } catch (e) {}
+})();
 const Ads = {
   available: true,
   show(onReward, returnState) {
     adCtx = { t: 3, onReward, ret: returnState };
     prevState = state; state = 'ad';
+    if (!cgReady) return;
+    adCtx.external = true;
+    const finish = (rewarded) => {
+      if (!adCtx) return;
+      if (master) master.gain.value = save.muted ? 0 : 0.45;
+      if (rewarded) { const cb = adCtx.onReward, ret = adCtx.ret; adCtx = null; state = ret; cb(); }
+      else { adCtx.external = false; adCtx.t = 3; } // ad failed: demo fallback still rewards
+    };
+    window.CrazyGames.SDK.ad.requestAd('rewarded', {
+      adStarted: () => { if (master) master.gain.value = 0; },
+      adFinished: () => finish(true),
+      adError: () => finish(false),
+    });
   }
 };
 
@@ -703,6 +724,7 @@ function update(dt, t) {
     return;
   }
   if (state === 'ad') {
+    if (adCtx.external) return; // real SDK ad playing; its callbacks restore state
     adCtx.t -= dt;
     if (adCtx.t <= 0) {
       const cb = adCtx.onReward, ret = adCtx.ret;
@@ -1657,6 +1679,7 @@ function drawRevive(t) {
 function drawAd(t) {
   drawOverlay(0.85);
   const cx = W / 2;
+  if (adCtx && adCtx.external) { text('AD BREAK', cx, H * 0.4, 34, '#fff', 'center', 900); return; }
   text('AD BREAK', cx, H * 0.35, 34, '#fff', 'center', 900);
   text('(demo ad — plug your ad SDK into Ads.show)', cx, H * 0.42, 13, 'rgba(255,255,255,0.5)');
   text(Math.ceil(adCtx ? adCtx.t : 0) + '', cx, H * 0.52, 60, '#ffe680', 'center', 900);
@@ -1940,11 +1963,18 @@ function render(t) {
 
 // ---------- main loop ----------
 let last = performance.now();
+let cgWasPlaying = false;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   update(dt, now / 1000);
   render(now / 1000);
+  // CrazyGames gameplay events, tracked centrally on state transitions
+  const playing = state === 'playing';
+  if (cgReady && playing !== cgWasPlaying) {
+    try { window.CrazyGames.SDK.game[playing ? 'gameplayStart' : 'gameplayStop'](); } catch (e) {}
+  }
+  cgWasPlaying = playing;
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

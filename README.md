@@ -30,10 +30,7 @@ Oyunda iki ödüllü reklam noktası **çalışır durumda** (şu an 3 saniyelik
 - **Revive** — ölünce "watch ad to revive"
 - **2x Shards** — oyun sonunda ödülü ikiye katla
 
-`index.html` içindeki `Ads.show()` fonksiyonuna (dosyanın başında, yorumlarla işaretli) portalın SDK çağrısını koy:
-- **CrazyGames** → `window.CrazyGames.SDK.ad.requestAd('rewarded', {adFinished: onReward})`
-- **Poki** → `PokiSDK.rewardedBreak().then(ok => ok && onReward())`
-- **GameMonetize / GameDistribution** benzer şekilde
+**CrazyGames SDK v3 entegre edildi:** oyun CrazyGames'te çalışırken gerçek ödüllü reklam gösterir (`Ads.show` + gameplayStart/Stop olayları); diğer her yerde (GitHub Pages, Play Store, itch.io) otomatik olarak 3 saniyelik demo reklama düşer. Başka bir portal (Poki vb.) istersen aynı `Ads.show` içine o SDK'yı koy.
 
 Bu portallara oyunu **ücretsiz yüklüyorsun**, onlar reklam gösterip geliri seninle paylaşıyor. Tek dosyalık HTML5 oyunlar tam da bu platformların istediği format.
 
